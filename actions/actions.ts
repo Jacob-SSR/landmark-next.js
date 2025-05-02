@@ -1,6 +1,11 @@
 "use server";
 
-import { profileSchema, validateWithZod } from "@/utils/schemas";
+import {
+  imageSchema,
+  landmarkSchema,
+  profileSchema,
+  validateWithZod,
+} from "@/utils/schemas";
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import db from "@/utils/db";
 import { redirect } from "next/navigation";
@@ -27,32 +32,22 @@ export const createProfileAction = async (
   formData: FormData
 ) => {
   try {
-    const user = await currentUser();
-    if (!user) throw new Error("Please Login!!!");
+    const user = await getAuthUser();
 
     const rawData = Object.fromEntries(formData);
-    const validateField = validateWithZod(profileSchema, rawData);
+    const file = formData.get("image") as File;
 
-    await db.profile.create({
-      data: {
-        clerkId: user.id,
-        email: user.emailAddresses[0].emailAddress,
-        profileImage: user.imageUrl ?? "",
-        ...validateField,
-      },
-    });
-    const client = await clerkClient();
+    const validateFile = validateWithZod(imageSchema, { image: file });
+    const validateField = validateWithZod(landmarkSchema, rawData);
+    console.log("validated", validateFile);
+    console.log("validated", validateField);
 
-    await client.users.updateUserMetadata(user.id, {
-      privateMetadata: {
-        hasProfile: true,
-      },
-    });
+    return { message: "Create Landmark Success!!!" };
   } catch (error) {
     // console.log(error);
     return renderError(error);
   }
-  redirect("/");
+  // redirect("/");
 };
 
 export const createLandmarkAction = async (
@@ -65,9 +60,9 @@ export const createLandmarkAction = async (
 
     const rawData = Object.fromEntries(formData);
     // const validateField = validateWithZod(profileSchema, rawData);
-    console.log(rawData)
+    console.log(rawData);
 
-    return {message:"Create Landmark Success!!!"}
+    return { message: "Create Landmark Success!!!" };
   } catch (error) {
     // console.log(error);
     return renderError(error);

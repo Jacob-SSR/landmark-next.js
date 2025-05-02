@@ -3,6 +3,11 @@ import { SubmitButton } from "@/components/form/Buttons";
 import CategoryInput from "@/components/form/CategoryInput";
 import FormContainer from "@/components/form/FormContainer";
 import FormInput from "@/components/form/FormInput";
+import ImageInput from "@/components/form/ImageInput";
+import ProvinceInput from "@/components/form/ProvinceInput";
+import TextAreaInput from "@/components/form/TextAreaInput";
+import MapLandmark from "@/components/map/MapLandmark";
+
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
@@ -25,6 +30,20 @@ const CreateProfilePage = async () => {
             {/* Category */}
             <CategoryInput />
           </div>
+          <TextAreaInput name="description" />
+          <div className="grid md:grid-cols-2 gap-4 mt-4">
+            <FormInput
+              name="price"
+              label="Price"
+              type="number"
+              placeholder="Price"
+            />
+            <ProvinceInput />
+          </div>
+
+          <ImageInput />
+
+          <MapLandmark />
 
           <SubmitButton text="create landmark" size="default" />
         </FormContainer>
