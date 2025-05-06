@@ -9,6 +9,7 @@ import {
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import db from "@/utils/db";
 import { redirect } from "next/navigation";
+import { uploadFile } from "@/utils/supabase";
 
 const getAuthUser = async () => {
   const user = await currentUser();
@@ -32,22 +33,33 @@ export const createProfileAction = async (
   formData: FormData
 ) => {
   try {
-    const user = await getAuthUser();
+    const user = await currentUser();
+    if (!user) throw new Error("Please Login!!!");
 
     const rawData = Object.fromEntries(formData);
-    const file = formData.get("image") as File;
+    const validateField = validateWithZod(profileSchema, rawData);
+    // console.log("validated", validateField);
 
-    const validateFile = validateWithZod(imageSchema, { image: file });
-    const validateField = validateWithZod(landmarkSchema, rawData);
-    console.log("validated", validateFile);
-    console.log("validated", validateField);
-
-    return { message: "Create Landmark Success!!!" };
+    await db.profile.create({
+      data: {
+        clerkId: user.id,
+        email: user.emailAddresses[0].emailAddress,
+        profileImage: user.imageUrl ?? "",
+        ...validateField,
+      },
+    });
+    const client = await clerkClient();
+    await client.users.updateUserMetadata(user.id, {
+      privateMetadata: {
+        hasProfile: true,
+      },
+    });
+    // return { message: "Create Profile Success!!!" };
   } catch (error) {
     // console.log(error);
     return renderError(error);
   }
-  // redirect("/");
+  redirect("/");
 };
 
 export const createLandmarkAction = async (
@@ -55,17 +67,38 @@ export const createLandmarkAction = async (
   formData: FormData
 ): Promise<{ message: string }> => {
   try {
-    const user = await currentUser();
-    if (!user) throw new Error("Please Login!!!");
-
+    const user = await getAuthUser();
     const rawData = Object.fromEntries(formData);
-    // const validateField = validateWithZod(profileSchema, rawData);
-    console.log(rawData);
+    const file = formData.get("image") as File;
 
-    return { message: "Create Landmark Success!!!" };
+    const validateFile = validateWithZod(imageSchema, { image: file });
+    const validateField = validateWithZod(landmarkSchema, rawData);
+
+    const fullPath = await uploadFile(validateFile.image);
+    console.log(fullPath);
+
+    await db.landmark.create({
+      data: {
+        ...validateField,
+        image: fullPath,
+        profileId: user.id,
+      },
+    });
+
+    // return { message: "Create Landmark Success!!!" };
   } catch (error) {
     // console.log(error);
     return renderError(error);
   }
-  // redirect("/");
+  redirect("/");
+};
+
+export const fetchLandmarks = async () => {
+  const landmarks = await db.landmark.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return landmarks;
 };

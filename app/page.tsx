@@ -1,10 +1,11 @@
-import { Button } from "@/components/ui/button"
+import LandmarkContainer from "@/components/home/LandmarkContainer";
+import { Button } from "@/components/ui/button";
 
 function HomePage() {
   return (
-    <div>HomePage
-      <Button variant="outline">Submit</Button>
-    </div>
-  )
+    <>
+      <LandmarkContainer />
+    </>
+  );
 }
-export default HomePage
+export default HomePage;
