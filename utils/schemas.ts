@@ -32,7 +32,7 @@ export const landmarkSchema = z.object({
   description: z
     .string()
     .min(2, { message: "Description must be longer than 2 characters" })
-    .max(200, { message: "Description must be less than 200 characters" }),
+    .max(1500, { message: "Description must be less than 1500 characters" }),
   price: z.coerce
     .number()
     .int()

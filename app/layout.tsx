@@ -4,6 +4,12 @@ import "./globals.css";
 import Providers from "./Providers";
 import Navbar from "@/components/Navbar/Navbar";
 import { ClerkProvider } from "@clerk/nextjs";
+import { IBM_Plex_Sans_Thai } from "next/font/google";
+
+const imb = IBM_Plex_Sans_Thai({
+  weight: "400",
+  subsets: ["latin", "thai"],
+});
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -29,9 +35,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
+        <body className={`${imb.className} antialiased`}>
           <Providers>
             <Navbar />
             <main className="container">{children}</main>

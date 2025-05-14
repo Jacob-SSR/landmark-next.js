@@ -1,17 +1,41 @@
 import Image from "next/image";
+import { LandmarkCardProps } from "@/utils/types";
+import LandmarkRating from "./LandmarkRating";
+import FavoriteToggleButton from "./FavoriteToggleButton";
+import Link from "next/link";
 
-const LandmarkCard = ({ landmark }) => {
-  const { name, image } = landmark;
+const LandmarkCard = ({ landmark }: { landmark: LandmarkCardProps }) => {
+  const { name, image, id, description, province, price, lat, lng, category } =
+    landmark;
   return (
     <article className="group relative">
-      <div className="relative h-[300px]">
-        <Image
-          src={image}
-          fill
-          sizes="(max-width:768px) 100vw, 50vw"
-          alt={name}
-          className="object-cover"
-        />
+      <Link href={`/landmark/${id}`}>
+        <div className="relative h-[300px] rounded-md mb-2">
+          <Image
+            src={image}
+            fill
+            sizes="(max-width:768px) 100vw, 50vw"
+            alt={name}
+            className="object-cover rounded-md group-hover:scale-105 transition-transform duration-300"
+          />
+        </div>
+        <div className="flex justify-between items-center">
+          <h3 className="text-sm font-semibold mt-1">
+            {name.substring(0, 30)}
+          </h3>
+          <LandmarkRating />
+        </div>
+        <p className="text-sm mt-1 text-muted-foreground">
+          {description.substring(0, 40)}
+        </p>
+
+        <div className="mt-1 flex items-center justify-between ">
+          <span>THB {price}</span>
+          <p>{province}</p>
+        </div>
+      </Link>
+      <div className="absolute top-5 right-5">
+        <FavoriteToggleButton landmarkId={id} />
       </div>
     </article>
   );

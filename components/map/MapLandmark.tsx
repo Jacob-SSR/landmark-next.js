@@ -6,11 +6,10 @@ import {
   Popup,
   Marker,
   useMapEvents,
-  LayersControl,
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const iconUrl =
   "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon-2x.png";
@@ -26,19 +25,18 @@ type LocationMarkerProps = {
 };
 
 function LocationMarker({ position, setPosition }: LocationMarkerProps) {
-  const map = useMapEvents({
+  useMapEvents({
     click(e) {
       const newLocation: LatLng = [e.latlng.lat, e.latlng.lng];
       setPosition(newLocation);
-      map.flyTo(e.latlng);
     },
   });
 
-  return position === null ? null : (
+  return position ? (
     <Marker position={position} icon={markerIcon}>
       <Popup>You are here</Popup>
     </Marker>
-  );
+  ) : null;
 }
 
 function MapLandmark({
@@ -49,6 +47,13 @@ function MapLandmark({
   const defaultLocation: LatLng = [14, 100];
   const [position, setPosition] = useState<LatLng | null>(null);
 
+  // ตั้งค่าเริ่มต้นให้ตำแหน่งหากมี location ส่งเข้ามา
+  useEffect(() => {
+    if (location) {
+      setPosition([location.lat, location.lng]);
+    }
+  }, [location]);
+
   return (
     <>
       <h1 className="mt-4 font-semibold">Where are you?</h1>
@@ -56,26 +61,25 @@ function MapLandmark({
       <input type="hidden" name="lng" value={position ? position[1] : ""} />
       <MapContainer
         className="h-[50vh] rounded-lg z-0 relative mb-2 mt-2"
-        center={location || defaultLocation}
+        center={position || defaultLocation}
         zoom={7}
         scrollWheelZoom={true}
       >
-        <Marker position={location || defaultLocation} icon={markerIcon}>
-          <Popup>
-            A pretty CSS3 popup. <br /> Easily customizable.
-          </Popup>
-        </Marker>
+        {position && (
+          <Marker position={position} icon={markerIcon}>
+            <Popup>
+              Selected Location: <br />
+              Lat: {position[0]}, Lng: {position[1]}
+            </Popup>
+          </Marker>
+        )}
 
         <LocationMarker position={position} setPosition={setPosition} />
 
-        <LayersControl>
-          <LayersControl.BaseLayer name="Openstreetmap" checked>
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-          </LayersControl.BaseLayer>
-        </LayersControl>
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
       </MapContainer>
     </>
   );
